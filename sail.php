@@ -5,10 +5,10 @@ require 'vendor/autoload.php';
 $dotEnv = new \Dotenv\Dotenv(__DIR__);
 $dotEnv->load();
 
-$usernameOrEmail = getenv('USERNAMEOREMAIL');
-$password = getenv('PASSWORD');
-$username = getenv('USERNAME');
-$userAgent = getenv('USERAGENT');
+$usernameOrEmail = getenv('AUTO_USERNAMEOREMAIL');
+$password = getenv('AUTO_PASSWORD');
+$username = getenv('AUTO_USERNAME');
+$userAgent = getenv('AUTO_USERAGENT');
 $curl = new \anlutro\cURL\cURL;
 
 // 1. Login
@@ -34,7 +34,7 @@ if(!$hasSailed){
  */
 function fetchFullUrl($suffix)
 {
-    $domain = "http://". getenv('DOMAIN');
+    $domain = "http://". getenv('AUTO_DOMAIN');
     if($suffix[0] == '/'){
         return $domain. $suffix;
     } else{
@@ -110,7 +110,7 @@ function hasSailed()
     $listStart = strpos($body, '<ul>', $listDivPst) + mb_strlen("<ul>");
     $listEnd = strpos($body, "</ul>", $listStart);
     $listPart = substr($body, $listStart, $listEnd - $listStart);
-    $firstSailPst = strpos($listPart, getenv('TAG'));
+    $firstSailPst = strpos($listPart, getenv('AUTO_TAG'));
     if($firstSailPst === false){
         return false;
     }
@@ -136,7 +136,7 @@ function prePost()
     $prePostUrl = fetchFullUrl('post');
     $prePostResponse = $curl->newRequest('GET', $prePostUrl, [
         'type' => 4,
-        'tags' => getenv('TAG'). ',段落'
+        'tags' => getenv('AUTO_TAG'). ',段落'
     ])->setCookies($cookies)->setHeader('User-Agent', $userAgent)->send();
     $body = $prePostResponse->toArray()['body'];
     $startPst = strpos($body, "onclick=\"AddArticle.add(null,'");
@@ -158,8 +158,8 @@ function newSail(){
     $addArticleUrl = fetchFullUrl('/article');
     $curl->newJsonRequest('POST', $addArticleUrl, [
         'articleTitle' => date('Y-m-d'),
-        'articleContent' => '###### ['. getenv('CONTENT'). '](https://github.com/breezecoder/auto_sail)',
-        'articleTags' => getenv('TAG').",段落",
+        'articleContent' => '###### ['. getenv('AUTO_CONTENT'). '](https://github.com/breezecoder/auto_sail)',
+        'articleTags' => getenv('AUTO_TAG').",段落",
         'articleCommentable' => true,
         'articleType' => 4,
         'articleRewardContent' => '',
