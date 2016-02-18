@@ -105,8 +105,14 @@ function hasSailed()
     $myListResponse = $curl->newRequest('GET', $myListUrl)
             ->setHeader('User-Agent', $userAgent)
             ->setCookies($cookies)->send();
+    if($myListResponse->statusCode !== 200){
+        throw new Exception('列表读取异常', $myListResponse->statusCode);
+    }
     $body = $myListResponse->toArray()['body'];
     $listDivPst = strpos($body, "<div class=\"list\">");
+    if($listDivPst === false){
+        throw new Exception('列表读取异常', $myListResponse->statusCode);
+    }
     $listStart = strpos($body, '<ul>', $listDivPst) + mb_strlen("<ul>");
     $listEnd = strpos($body, "</ul>", $listStart);
     $listPart = substr($body, $listStart, $listEnd - $listStart);
