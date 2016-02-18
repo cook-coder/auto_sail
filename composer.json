@@ -1,0 +1,6 @@
+{
+    "require": {
+        "anlutro/curl": "^1.4",
+        "vlucas/phpdotenv": "^2.2"
+    }
+}
