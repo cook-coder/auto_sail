@@ -60,12 +60,12 @@ function login()
             ->send();
     
     $stringIncSessionId = $loginResponse->getHeaders()['set-cookie'][0];
-    $sessionIncArr = split(';', $stringIncSessionId);
-    $sessionArr = split('=', $sessionIncArr[0]);
+    $sessionIncArr = explode(';', $stringIncSessionId);
+    $sessionArr = explode('=', $sessionIncArr[0]);
     
     $stringIncToken = $loginResponse->getHeaders()['set-cookie'][1];
-    $b3logLatkeIncArr = split(';', $stringIncToken);
-    $b3logLatkeArr = split('=', $b3logLatkeIncArr[0]);
+    $b3logLatkeIncArr = explode(';', $stringIncToken);
+    $b3logLatkeArr = explode('=', $b3logLatkeIncArr[0]);
     
     $cookies = array(
         $sessionArr[0] => $sessionArr[1],
