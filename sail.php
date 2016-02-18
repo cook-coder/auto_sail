@@ -158,7 +158,7 @@ function newSail(){
     $addArticleUrl = fetchFullUrl('/article');
     $curl->newJsonRequest('POST', $addArticleUrl, [
         'articleTitle' => date('Y-m-d'),
-        'articleContent' => '###### [自动占坑脚本](https://github.com/breezecoder/auto_sail)',
+        'articleContent' => '###### ['. getenv('CONTENT'). '](https://github.com/breezecoder/auto_sail)',
         'articleTags' => getenv('TAG').",段落",
         'articleCommentable' => true,
         'articleType' => 4,
