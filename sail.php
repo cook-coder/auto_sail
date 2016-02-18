@@ -111,6 +111,9 @@ function hasSailed()
     $listEnd = strpos($body, "</ul>", $listStart);
     $listPart = substr($body, $listStart, $listEnd - $listStart);
     $firstSailPst = strpos($listPart, getenv('TAG'));
+    if($firstSailPst === false){
+        return false;
+    }
     $dateStart = strpos($listPart, "</span>", $firstSailPst);
     $dateEnd = strpos($listPart, "</span>", $dateStart + mb_strlen("</span>"));
     $dateStrWithTime = trim(substr($listPart, $dateStart + mb_strlen("</span>"),
