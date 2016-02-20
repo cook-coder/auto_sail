@@ -5,35 +5,52 @@ require 'vendor/autoload.php';
 $dotEnv = new \Dotenv\Dotenv(__DIR__);
 $dotEnv->load();
 
-$usernameOrEmail = getenv('AUTO_USERNAMEOREMAIL');
-$password = getenv('AUTO_PASSWORD');
-$username = getenv('AUTO_USERNAME');
+$usernameOrEmails = explode(',', getenv('AUTO_USERNAMEOREMAIL'));
+$passwords = explode(',', getenv('AUTO_PASSWORD'));
+$usernames = explode(',', getenv('AUTO_USERNAME'));
 $userAgent = getenv('AUTO_USERAGENT');
 $curl = new \anlutro\cURL\cURL;
 
-// 1. Login
-$cookies = login();
+if(sizeof($usernameOrEmails) === sizeof($passwords) 
+    && sizeof($usernameOrEmails) === sizeof($usernames)){
+    for($i = 0; $i < sizeof($usernames); $i++) {
+        
+        $usernameOrEmail = $usernameOrEmails[$i];
+        $password = $passwords[$i];
+        $username = $usernames[$i];
+        // 1. Login
+        $cookies = login();
+        if($cookies === false){
+            continue;
+        }
+        // 2. Daily CheckIn
+        dailyCheckIn();
 
-// 2. Daily CheckIn
-dailyCheckIn();
-
-// 3. Diary
-if(in_array(date('N'), ['6','7'])){
-    echo 'No need for weekend!'.PHP_EOL;
-} else{
-    // Check if sailed
-    $hasSailed = hasSailed();
-    // if not
-    if($hasSailed){
-        echo 'Diary has been written!'.PHP_EOL;
-    } else{
-        // Get csrfToken
-        $csrfToken = prePost();
-        // Create sail article
-        $newSailResponse = newSail();
-        echo 'Diary created!'.PHP_EOL;
+        // 3. Diary
+        if(in_array(date('N'), ['6','7']) == false){
+            echo 'No need for weekend!'.PHP_EOL;
+        } else{
+            // Check if sailed
+            $hasSailed = hasSailed();
+            // if not
+            if($hasSailed){
+                echo 'Diary has been written!'.PHP_EOL;
+            } else{
+                // Get csrfToken
+                $csrfToken = prePost();
+                // Create sail article
+                $newSailResponse = newSail();
+                echo 'Diary created!'.PHP_EOL;
+            }
+        }
+        // 4. logout
+        logout();
     }
+} else{
+    echo 'Data Config Error!'.PHP_EOL;
 }
+
+
 
 
 /**
@@ -67,20 +84,27 @@ function login()
             ['nameOrEmail'=> $usernameOrEmail, 'userPassword'=>  md5($password)])
             ->setHeader('User-Agent', $userAgent)
             ->send();
-    
-    $stringIncSessionId = $loginResponse->getHeaders()['set-cookie'][0];
-    $sessionIncArr = explode(';', $stringIncSessionId);
-    $sessionArr = explode('=', $sessionIncArr[0]);
-    
-    $stringIncToken = $loginResponse->getHeaders()['set-cookie'][1];
-    $b3logLatkeIncArr = explode(';', $stringIncToken);
-    $b3logLatkeArr = explode('=', $b3logLatkeIncArr[0]);
-    
-    $cookies = array(
-        $sessionArr[0] => $sessionArr[1],
-        $b3logLatkeArr[0] => $b3logLatkeArr[1]
-    );
-    return $cookies;
+    if($loginResponse->statusCode == 200){
+        $body = $loginResponse->body;
+        $bodyArray = json_decode($body, true);
+        if(isset($bodyArray['sc']) && $bodyArray['sc'] === true){
+            $stringIncSessionId = $loginResponse->getHeaders()['set-cookie'][0];
+            $sessionIncArr = explode(';', $stringIncSessionId);
+            $sessionArr = explode('=', $sessionIncArr[0]);
+
+            $stringIncToken = $loginResponse->getHeaders()['set-cookie'][1];
+            $b3logLatkeIncArr = explode(';', $stringIncToken);
+            $b3logLatkeArr = explode('=', $b3logLatkeIncArr[0]);
+
+            $cookies = array(
+                $sessionArr[0] => $sessionArr[1],
+                $b3logLatkeArr[0] => $b3logLatkeArr[1]
+            );
+            return $cookies;
+        } else{
+            return false;
+        }
+    }
 }
 
 /**
@@ -182,4 +206,18 @@ function newSail(){
     ])->setHeader('Referer', fetchFullUrl('post'))
       ->setHeader('csrfToken', $csrfToken)
       ->setCookies($cookies)->setHeader('User-Agent', $userAgent)->send();
+}
+
+/**
+ * Logout
+ * @global \anlutro\cURL\cURL $curl
+ * @global array $cookies
+ * @global strting $userAgent
+ */
+function logout()
+{
+    global $curl, $cookies, $userAgent;
+    $logoutUrl = fetchFullUrl('/logout?goto='.fetchFullUrl('/'));
+    $logoutResponse = $curl->newRequest('GET', $logoutUrl)
+            ->setCookies($cookies)->setHeader('User-Agent', $userAgent)->send();
 }
