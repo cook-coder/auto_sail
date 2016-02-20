@@ -27,7 +27,7 @@ if(sizeof($usernameOrEmails) === sizeof($passwords)
         dailyCheckIn();
 
         // 3. Diary
-        if(in_array(date('N'), ['6','7']) == false){
+        if(in_array(date('N'), ['6','7'])){
             echo 'No need for weekend!'.PHP_EOL;
         } else{
             // Check if sailed
