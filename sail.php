@@ -17,15 +17,24 @@ $cookies = login();
 // 2. Daily CheckIn
 dailyCheckIn();
 
-// Check if sailed
-$hasSailed = hasSailed();
-// if not
-if(!$hasSailed){
-    // Get csrfToken
-    $csrfToken = prePost();
-    // Create sail article
-    $newSailResponse = newSail();
+// 3. Diary
+if(in_array(date('N'), ['6','7'])){
+    echo 'No need for weekend!'.PHP_EOL;
+} else{
+    // Check if sailed
+    $hasSailed = hasSailed();
+    // if not
+    if($hasSailed){
+        echo 'Diary has been written!'.PHP_EOL;
+    } else{
+        // Get csrfToken
+        $csrfToken = prePost();
+        // Create sail article
+        $newSailResponse = newSail();
+        echo 'Diary created!'.PHP_EOL;
+    }
 }
+
 
 /**
  * Make up the full request url 
